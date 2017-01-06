@@ -17,16 +17,28 @@ bucket = gcs.get_bucket(CLOUD_STORAGE_BUCKET)
 
 
 @app.route('/create', methods=['POST'])
-def upload():
+def create():
     track_data = request.json
-
-    print(track_data)
 
     if not track_data:
         return 'No track data uploaded.', 400
 
     track_id = create_track_json(track_data)
     create_edit_json(track_data, track_id)
+
+    return jsonify({ 'message': 'ok' })
+
+
+@app.route('/update', methods=['POST'])
+def update():
+    id = request.json['id']
+    track_data = request.json['data']
+
+    if not track_data:
+        return 'No track data uploaded.', 400
+
+    upload_json(track_data, 'edit/' + id)
+    upload_json(track_data, 'track/' + track_data['track_id'])
 
     return jsonify({ 'message': 'ok' })
 
@@ -50,7 +62,6 @@ def generate_track_id():
 def create_edit_json(track_data):
     edit_id = generate_edit_id()
     track_data['track_id'] = track_id
-    track_data['edit_id'] = edit_id
 
     upload_json(track_data, 'edit/' + edit_id)
 
