@@ -37,6 +37,16 @@ def update():
     if not track_data:
         return 'No track data uploaded.', 400
 
+    # validate id
+    blob = bucket.blob('edit/' + id)
+    if not blob.exists():
+        return 'Invalid ids to update.', 400
+
+    data = json.loads(blob.download_as_string().decode('utf-8'))
+    if track_data['track_id'] != data['track_id']:
+        return 'Invalid ids to update.', 400
+
+    # update track.json & edit.json
     upload_json(track_data, 'edit/' + id)
     upload_json(track_data, 'track/' + track_data['track_id'])
 
