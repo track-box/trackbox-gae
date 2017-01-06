@@ -26,29 +26,50 @@ def upload():
         return 'No track data uploaded.', 400
 
     track_id = create_track_json(track_data)
+    create_edit_json(track_data, track_id)
 
-    return jsonify({ 'message': 'success' })
+    return jsonify({ 'message': 'ok' })
 
 
 def create_track_json(track_data):
     track_id = generate_track_id()
     track_data['track_id'] = track_id
 
-    blob = bucket.blob('track/' + track_id)
-    blob.upload_from_string(
-        json.dumps(track_data),
-        content_type='application/json'
-    )
+    upload_json(track_data, 'track/' + track_id)
     return track_id
 
 
 def generate_track_id():
-    id = uuid.uuid4().hex[:9] # 8byte
+    id = uuid.uuid4().hex[:9] # 9byte
 
     while bucket.blob('track/' + id).exists():
-        id = uuid.uuid4().hex[:9] # 8byte
+        id = uuid.uuid4().hex[:9] # 9byte
 
     return id
+
+def create_edit_json(track_data):
+    edit_id = generate_edit_id()
+    track_data['track_id'] = track_id
+    track_data['edit_id'] = edit_id
+
+    upload_json(track_data, 'edit/' + edit_id)
+
+
+def generate_edit_id():
+    id = uuid.uuid4().hex[:12] # 12byte
+
+    while bucket.blob('edit/' + id).exists():
+        id = uuid.uuid4().hex[:12] # 12byte
+
+    return id
+
+
+def upload_json(data, filename):
+    blob = bucket.blob(filename)
+    blob.upload_from_string(
+        json.dumps(data),
+        content_type='application/json'
+    )
 
 
 @app.errorhandler(500)
