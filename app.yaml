@@ -7,5 +7,5 @@ runtime_config:
 
 #[START env]
 env_variables:
-    CLOUD_STORAGE_BUCKET: your-bucket-name
+    CLOUD_STORAGE_BUCKET: trackbox
 #[END env]

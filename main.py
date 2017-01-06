@@ -1,71 +1,54 @@
-# Copyright 2015 Google Inc. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# [START app]
 import logging
 import os
+import json
+import uuid
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from google.cloud import storage
 
-# [start config]
 app = Flask(__name__)
-
 
 # Configure this environment variable via app.yaml
 CLOUD_STORAGE_BUCKET = os.environ['CLOUD_STORAGE_BUCKET']
-# [end config]
+
+gcs = storage.Client()
+bucket = gcs.get_bucket(CLOUD_STORAGE_BUCKET)
 
 
-# [START form]
-@app.route('/')
-def index():
-    return """
-<form method="POST" action="/upload" enctype="multipart/form-data">
-    <input type="file" name="file">
-    <input type="submit">
-</form>
-"""
-# [END form]
 
-
-# [START upload]
-@app.route('/upload', methods=['POST'])
+@app.route('/create', methods=['POST'])
 def upload():
-    """Process the uploaded file and upload it to Google Cloud Storage."""
-    uploaded_file = request.files.get('file')
+    track_data = request.json
 
-    if not uploaded_file:
-        return 'No file uploaded.', 400
+    print(track_data)
 
-    # Create a Cloud Storage client.
-    gcs = storage.Client()
+    if not track_data:
+        return 'No track data uploaded.', 400
 
-    # Get the bucket that the file will be uploaded to.
-    bucket = gcs.get_bucket(CLOUD_STORAGE_BUCKET)
+    track_id = create_track_json(track_data)
 
-    # Create a new blob and upload the file's content.
-    blob = bucket.blob(uploaded_file.filename)
+    return jsonify({ 'message': 'success' })
 
+
+def create_track_json(track_data):
+    track_id = generate_track_id()
+    track_data['track_id'] = track_id
+
+    blob = bucket.blob('track/' + track_id)
     blob.upload_from_string(
-        uploaded_file.read(),
-        content_type=uploaded_file.content_type
+        json.dumps(track_data),
+        content_type='application/json'
     )
+    return track_id
 
-    # The public URL can be used to directly access the uploaded file via HTTP.
-    return blob.public_url
-# [END upload]
+
+def generate_track_id():
+    id = uuid.uuid4().hex[:9] # 8byte
+
+    while bucket.blob('track/' + id).exists():
+        id = uuid.uuid4().hex[:9] # 8byte
+
+    return id
 
 
 @app.errorhandler(500)
@@ -78,7 +61,4 @@ def server_error(e):
 
 
 if __name__ == '__main__':
-    # This is used when running locally. Gunicorn is used to run the
-    # application on Google App Engine. See entrypoint in app.yaml.
     app.run(host='127.0.0.1', port=8080, debug=True)
-# [END app]
