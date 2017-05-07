@@ -2,7 +2,12 @@ runtime: python27
 threadsafe: yes
 api_version: 1
 
+inbound_services:
+- mail
+
 handlers:
+- url: /_ah/mail/.+
+  script: handle_incoming_email.app
 - url: .*
   script: main.app
 
