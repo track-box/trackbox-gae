@@ -8,9 +8,7 @@ from google.cloud import storage
 
 app = Flask(__name__)
 
-# Configure this environment variable via app.yaml
-CLOUD_STORAGE_BUCKET = os.environ['CLOUD_STORAGE_BUCKET']
-
+CLOUD_STORAGE_BUCKET = 'trackbox'
 gcs = storage.Client()
 bucket = gcs.get_bucket(CLOUD_STORAGE_BUCKET)
 
@@ -89,8 +87,7 @@ def upload_json(data, filename):
     blob = bucket.blob(filename)
     blob.upload_from_string(
         json.dumps(data),
-        content_type='application/json'
-    )
+        content_type='application/json')
 
 
 @app.errorhandler(500)
