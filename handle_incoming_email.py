@@ -1,21 +1,26 @@
 import logging
 
+from google.appengine.api import mail, app_identity
 from google.appengine.ext.webapp.mail_handlers import InboundMailHandler
 import webapp2
 
 
+def send_mail(to_address):
+    sender_address = 'trackbox@{}.appspotmail.com'.format(app_identity.get_application_id())
+    message = mail.EmailMessage(
+            sender=sender_address,
+            subject="test")
+    message.to = to_address
+    message.body = """test
+    """
+    message.send()
+
 class LogSenderHandler(InboundMailHandler):
     def receive(self, mail_message):
         logging.info("Received a message from: " + mail_message.sender)
-        plaintext_bodies = mail_message.bodies('text/plain')
-        html_bodies = mail_message.bodies('text/html')
 
-        for content_type, body in html_bodies:
-            decoded_html = body.decode()
-            logging.info("Html body of length %d.", len(decoded_html))
+        send_mail(mail_message.sender)
 
-        for content_type, body in plaintext_bodies:
-            plaintext = body.decode()
-            logging.info("Plain text body of length %d.", len(plaintext))
 
 app = webapp2.WSGIApplication([LogSenderHandler.mapping()], debug=True)
+
