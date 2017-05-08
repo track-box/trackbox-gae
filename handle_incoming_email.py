@@ -23,28 +23,29 @@ class LogSenderHandler(InboundMailHandler):
     def receive(self, mail_message):
         logging.info("Received a message from: " + mail_message.sender)
 
-        name = mail_message.subject
-        if name is None: name = "track"
+        try:
+            name = mail_message.subject
+            if name is None: name = "track"
 
-        filename, payload = mail_message.attachments[0]
-        logging.info(filename)
+            if mail_message.attachments is None:
+                raise Exception("track file not found")
 
-        track_data = parse_gpx.parse(payload.decode())
-        track_json = {
-            "name": name,
-            "track": track_data
-        }
-        logging.info(name + " " + str(len(track_data)) + " points")
+            filename, payload = mail_message.attachments[0]
+            logging.info(filename)
 
-        if not track_data:
-            send_mail(
-                mail_message.sender,
-                "TrackBox Error",
-                "track data not found")
+            track_data = parse_gpx.parse(payload.decode())
+            track_json = {
+                "name": name,
+                "track": track_data
+            }
+            logging.info(name + " " + str(len(track_data)) + " points")
 
-        else:
+            if not track_data:
+                raise Exception("track data not found")
+
             track_id = main.create_track_json(track_json)
             edit_id = main.create_edit_json(track_json, track_id)
+            logging.info("created:" + track_id + " " + edit_id)
 
             send_mail(
                 mail_message.sender,
@@ -58,6 +59,11 @@ class LogSenderHandler(InboundMailHandler):
 by TrackBox
 """.format(name, track_id, edit_id))
 
+        except Exception as e:
+            send_mail(
+                mail_message.sender,
+                "TrackBox Error",
+                str(e))
 
 app = webapp2.WSGIApplication([LogSenderHandler.mapping()], debug=True)
 
