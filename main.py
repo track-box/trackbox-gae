@@ -67,12 +67,12 @@ def generate_track_id():
 
     return id
 
-def create_edit_json(track_data):
+def create_edit_json(track_data, track_id):
     edit_id = generate_edit_id()
     track_data['track_id'] = track_id
 
     upload_json(track_data, 'edit/' + edit_id)
-
+    return edit_id
 
 def generate_edit_id():
     id = uuid.uuid4().hex[:12] # 12byte
