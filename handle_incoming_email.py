@@ -27,7 +27,7 @@ class LogSenderHandler(InboundMailHandler):
             name = mail_message.subject
             if name is None: name = "track"
 
-            if mail_message.attachments is None:
+            if not hasattr(mail_message, "attachments"):
                 raise Exception("track file not found")
 
             filename, payload = mail_message.attachments[0]
