@@ -4,9 +4,11 @@ import json
 import uuid
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from google.cloud import storage
 
 app = Flask(__name__)
+CORS(app)
 
 CLOUD_STORAGE_BUCKET = 'trackbox'
 gcs = storage.Client()
