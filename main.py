@@ -4,9 +4,11 @@ import json
 import uuid
 
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from google.cloud import storage
 
 app = Flask(__name__)
+CORS(app)
 
 CLOUD_STORAGE_BUCKET = 'trackbox'
 gcs = storage.Client()
@@ -67,12 +69,12 @@ def generate_track_id():
 
     return id
 
-def create_edit_json(track_data):
+def create_edit_json(track_data, track_id):
     edit_id = generate_edit_id()
     track_data['track_id'] = track_id
 
     upload_json(track_data, 'edit/' + edit_id)
-
+    return edit_id
 
 def generate_edit_id():
     id = uuid.uuid4().hex[:12] # 12byte
@@ -88,7 +90,8 @@ def upload_json(data, filename):
     blob.upload_from_string(
         json.dumps(data),
         content_type='application/json')
-
+    blob.cache_control = 'no-cache'
+    blob.patch()
 
 @app.errorhandler(500)
 def server_error(e):
