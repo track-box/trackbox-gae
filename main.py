@@ -90,7 +90,8 @@ def upload_json(data, filename):
     blob.upload_from_string(
         json.dumps(data),
         content_type='application/json')
-
+    blob.cache_control = 'no-cache'
+    blob.patch()
 
 @app.errorhandler(500)
 def server_error(e):
