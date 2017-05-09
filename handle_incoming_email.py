@@ -49,20 +49,20 @@ class LogSenderHandler(InboundMailHandler):
 
             send_mail(
                 mail_message.sender,
-                "航跡を共有しました - TrackBox",
+                "航跡を共有しました - Trackbox",
                 """航跡を共有しました。
 
 「{}」
 公開用リンク https://track-box.github.io/track/#{}
 編集用リンク https://track-box.github.io/edit/#{}
 
-by TrackBox
+by Trackbox
 """.format(name, track_id, edit_id))
 
         except Exception as e:
             send_mail(
                 mail_message.sender,
-                "TrackBox Error",
+                "Trackbox Error",
                 str(e))
 
 app = webapp2.WSGIApplication([LogSenderHandler.mapping()], debug=True)
