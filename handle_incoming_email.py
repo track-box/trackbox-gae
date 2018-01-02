@@ -24,8 +24,9 @@ class LogSenderHandler(InboundMailHandler):
         logging.info("Received a message from: " + mail_message.sender)
 
         try:
-            name = mail_message.subject.encode('utf-8')
-            if name is None: name = "track"
+            name = "track"
+            if 'subject' in mail_message and mail_message.subject is not None: 
+                name = mail_message.subject.encode('utf-8')
 
             if not hasattr(mail_message, "attachments"):
                 raise Exception("track file not found")
