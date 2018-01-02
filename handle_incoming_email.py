@@ -25,7 +25,7 @@ class LogSenderHandler(InboundMailHandler):
 
         try:
             name = "track"
-            if 'subject' in mail_message and mail_message.subject is not None: 
+            if hasattr(mail_message, "subject") and mail_message.subject is not None: 
                 name = mail_message.subject.encode('utf-8')
 
             if not hasattr(mail_message, "attachments"):
