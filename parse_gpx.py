@@ -3,6 +3,8 @@ import time
 from datetime import datetime
 
 def parse(string):
+    if 'gpxdata:' in string:
+        string = string.replace('gpxdata:', '')
     elem = ElementTree.fromstring(string)
     track = []
 
